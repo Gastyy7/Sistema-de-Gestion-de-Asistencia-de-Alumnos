@@ -42,13 +42,6 @@ class FormularioAlumnos:
 def Formulario():
 
   global base
-  global textBoxId
-  global textBoxNombres
-  global textBoxApellidos
-  global textBoxDNI
-  global textBoxFechaNacimiento
-  global textBoxTelefono
-  global textBoxDomicilio
   global groupBox
   global tree
 
@@ -61,7 +54,7 @@ try:
     base.geometry("1200x600")
     base.title("Gestión de Cursos y Estudiantes")
 
-    # Grupo: Cursos y Estudiantes
+    # Cursos y Estudiantes
     groupBoxCursos = LabelFrame(base, text="Cursos y Estudiantes", padx=5, pady=5)
     groupBoxCursos.pack(fill=BOTH, expand=True, padx=15, pady=15)
 
@@ -72,7 +65,7 @@ try:
     Label(course_frame, text="Cursos", font=("Arial", 12)).pack(anchor="w", padx=5, pady=5)
     course_list = Listbox(course_frame, height=12)
 
-    # Generar cursos desde "1ro A" hasta "6to C"
+    # Generar cursos desde 1ro a hasta 6to c
     courses = [f"{grado} {seccion}" for grado in ["1°", "2°", "3°", "4°", "5°", "6°"] for seccion in ["A", "B", "C"]]
     for course in courses:
         course_list.insert(END, course)
@@ -82,7 +75,7 @@ try:
     student_frame = Frame(groupBoxCursos)
     student_frame.pack(side=RIGHT, fill=BOTH, expand=True, padx=10, pady=10)
     control_frame = Frame(student_frame)
-    control_frame.pack(side=TOP, fill=X, padx=10, pady=5)  # Posiciónalo arriba o donde prefieras
+    control_frame.pack(side=TOP, fill=X, padx=10, pady=5) 
 
     student_tree = ttk.Treeview(student_frame, columns=("ID", "Fecha", "Nombre", "Apellido", "Presente/Ausente", "Observaciones"), show='headings', height=12)
     student_tree.heading("ID", text="ID")
@@ -107,9 +100,9 @@ try:
 
     from tkinter import Menu
 
-# Función para ordenar alumnos
+
     def ordenar_alumnos(criterio):
-    # Obtener el curso seleccionado
+
       if not course_list.curselection():
         messagebox.showwarning("Selección", "Por favor selecciona un curso primero")
         return
@@ -118,16 +111,14 @@ try:
       table_name = selected_course.lower().replace("°", "").replace(" ", "_")
 
       try:
-        # Consulta SQL basada en el criterio seleccionado
+ 
         query = f"SELECT id, fecha, nombre, apellido, presente_ausente, observaciones FROM `{table_name}` ORDER BY {criterio}"
         cursor.execute(query)
         students = cursor.fetchall()
 
-        # Limpiar la tabla actual
         for row in student_tree.get_children():
             student_tree.delete(row)
 
-        # Insertar los estudiantes ordenados
         for student in students:
             estado_presente = "Presente" if student[4] == 1 else "Ausente"
             formatted_student = (student[0], student[1], student[2], student[3], estado_presente, student[5])
@@ -136,61 +127,50 @@ try:
       except mysql.connector.Error as err:
         messagebox.showerror("Error", f"No se pudo ordenar a los alumnos: {err}")
 
-# Crear menú desplegable
+
     ordenar_menu = Menu(base, tearoff=0)
     ordenar_menu.add_command(label="Ordenar por ID", command=lambda: ordenar_alumnos("id"))
     ordenar_menu.add_command(label="Ordenar por Apellido", command=lambda: ordenar_alumnos("apellido"))
 
-# Botón que despliega el menú
+
     ordenar_button = Button(control_frame, text="Ordenar Alumnos", command=lambda: ordenar_menu.post(base.winfo_pointerx(), base.winfo_pointery()))
     ordenar_button.pack(side=LEFT, padx=5, pady=5)
 
 
     def load_students(event):
       try:
-        # Verificar si hay un curso seleccionado
         if not course_list.curselection():
-            return  # Salir si no hay selección
+            return 
 
-        # Obtener el curso seleccionado
-        selected_course = course_list.get(course_list.curselection())  # Ejemplo: "1ro A"
+        selected_course = course_list.get(course_list.curselection()) 
 
-        # Transformar el nombre del curso al formato de tabla (1_a, 2_b, etc.)
-        table_name = selected_course.lower().replace("°", "").replace(" ", "_")  # Ejemplo: "1ro A" → "1_a"
-        print(f"Nombre de la tabla generado: {table_name}")  # Log para verificar
+        table_name = selected_course.lower().replace("°", "").replace(" ", "_")  
+        print(f"Nombre de la tabla generado: {table_name}") 
 
-        # Verificar si la tabla existe
         cursor.execute(f"SHOW TABLES LIKE '{table_name}'")
         result = cursor.fetchone()
         if not result:
             raise Exception(f"La tabla '{table_name}' no existe en la base de datos")
 
-        # Limpiar la tabla de estudiantes en la interfaz
         for row in student_tree.get_children():
             student_tree.delete(row)
 
-        # Ejecutar la consulta para cargar estudiantes
         query = f"SELECT id, fecha, nombre, apellido, presente_ausente, observaciones FROM `{table_name}`"
         cursor.execute(query)
         students = cursor.fetchall()
 
-        # Insertar estudiantes en la tabla de la interfaz
         for student in students:
-            # Convertir el valor booleano de presente_ausente (1/0) a "Presente"/"Ausente"
             estado_presente = "Presente" if student[4] == 1 else "Ausente"
-            # Crear nueva tupla con el estado convertido
             formatted_student = (student[0], student[1], student[2], student[3], estado_presente, student[5])
-            # Insertar en la tabla de la interfaz
             student_tree.insert("", END, values=formatted_student)
 
       except mysql.connector.Error as err:
-        print(f"Error MySQL: {err}")  # Depuración
+        print(f"Error MySQL: {err}") 
         messagebox.showerror("Error", f"No se pudo cargar estudiantes: {err}")
       except Exception as e:
-        print(f"Error: {e}")  # Depuración
+        print(f"Error: {e}")  
         messagebox.showerror("Error", f"No se pudo cargar estudiantes: {e}")
 
-# Vincular la selección de un curso con la carga de estudiantes
     course_list.bind("<<ListboxSelect>>", load_students)
 
 
@@ -206,28 +186,26 @@ try:
       Label(add_window, text="Nombre:", font=("Arial", 12)).grid(row=0, column=0, pady=10, padx=10, sticky="w")
       entry_nombre = Entry(add_window, width=30)
       entry_nombre.grid(row=0, column=1, pady=10, padx=10)
-      entry_nombre.insert(0, "Complete el campo (solo letras)")  # Mensaje dentro del campo
-      entry_nombre.config(fg="grey")  # Color del texto inicial
+      entry_nombre.insert(0, "Complete el campo (solo letras)")
+      entry_nombre.config(fg="grey") 
 
       Label(add_window, text="Apellido:", font=("Arial", 12)).grid(row=1, column=0, pady=10, padx=10, sticky="w")
       entry_apellido = Entry(add_window, width=30)
       entry_apellido.grid(row=1, column=1, pady=10, padx=10)
-      entry_apellido.insert(0, "Complete el campo (solo letras)")  # Mensaje dentro del campo
-      entry_apellido.config(fg="grey")  # Color del texto inicial
+      entry_apellido.insert(0, "Complete el campo (solo letras)")  
+      entry_apellido.config(fg="grey")  
 
       Label(add_window, text="Observaciones:", font=("Arial", 12)).grid(row=4, column=0, pady=10, padx=10, sticky="w")
       entry_observaciones = Entry(add_window, width=30)
       entry_observaciones.grid(row=4, column=1, pady=10, padx=10)
-      entry_observaciones.insert(0, "Complete el campo (solo letras)")  # Mensaje dentro del campo
-      entry_observaciones.config(fg="grey")  # Color del texto inicial
+      entry_observaciones.insert(0, "Complete el campo (solo letras)") 
+      entry_observaciones.config(fg="grey") 
 
-    # Función para borrar el mensaje inicial cuando el campo recibe foco
       def borrar_mensaje(entry, placeholder_text):
         if entry.get() == placeholder_text:
             entry.delete(0, "end")
             entry.config(fg="black")
 
-    # Función para restaurar el mensaje si el campo queda vacío
       def restaurar_mensaje(entry, placeholder_text):
         if entry.get() == "":
             entry.insert(0, placeholder_text)
@@ -242,41 +220,32 @@ try:
       entry_observaciones.bind("<FocusIn>", lambda event: borrar_mensaje(entry_observaciones, "Complete el campo (solo letras)"))
       entry_observaciones.bind("<FocusOut>", lambda event: restaurar_mensaje(entry_observaciones, "Complete el campo (solo letras)"))
 
-    # Crear el OptionMenu para los cursos
       Label(add_window, text="Curso:", font=("Arial", 12)).grid(row=2, column=0, pady=10, padx=10, sticky="w")
 
-    # Generar cursos desde "1ro A" hasta "6to C"
+    # Generar cursos desde 1ro a hasta 6to c"
       courses = [f"{grado} {seccion}" for grado in ["1°", "2°", "3°", "4°", "5°", "6°"] for seccion in ["A", "B", "C"]]
 
-    # Crear la variable StringVar para el curso seleccionado
       selected_course = StringVar()
-      selected_course.set(courses[0])  # Establecer el primer curso como opción por defecto
+      selected_course.set(courses[0]) 
 
-    # Crear el OptionMenu
       option_course = OptionMenu(add_window, selected_course, *courses)
       option_course.grid(row=2, column=1, pady=10, padx=10)
 
-    # Modificar para usar un OptionMenu para "Presente/Ausente"
       Label(add_window, text="Asistencia:", font=("Arial", 12)).grid(row=3, column=0, pady=10, padx=10, sticky="w")
     
-    # Opciones para el campo "Presente/Ausente"
       presente_ausente_options = ["Presente", "Ausente"]
       selected_presente = StringVar()
-      selected_presente.set(presente_ausente_options[0])  # Establecer valor por defecto (Presente)
+      selected_presente.set(presente_ausente_options[0])  
     
-    # Crear el OptionMenu
       option_presente = OptionMenu(add_window, selected_presente, *presente_ausente_options)
       option_presente.grid(row=3, column=1, pady=10, padx=10)
 
-    # Función para validar que solo contenga letras (para nombre y apellido)
       def es_valido(nombre):
         return bool(re.match("^[A-Za-záéíóúÁÉÍÓÚñÑ]+$", nombre))
 
-    # Función para validar que no contenga caracteres especiales en observaciones
       def es_valido_observaciones(observaciones):
         return bool(re.match("^[A-Za-z0-9áéíóúÁÉÍÓÚñÑ., ]*$", observaciones))
 
-    # Función para guardar el alumno
       def guardar_alumno():
         nombre = entry_nombre.get()
         apellido = entry_apellido.get()
@@ -298,8 +267,8 @@ try:
             messagebox.showerror("Error", "El campo de observaciones solo puede contener letras, números, espacios y algunos caracteres especiales como puntos y comas.")
             return
 
-        curso_seleccionado = selected_course.get()  # Obtener el curso seleccionado
-        table_name = curso_seleccionado.replace(" ", "_").replace("°", "")  # Formatear el nombre de la tabla
+        curso_seleccionado = selected_course.get() 
+        table_name = curso_seleccionado.replace(" ", "_").replace("°", "")  
 
         presente = selected_presente.get()  # Obtener el valor seleccionado del OptionMenu
 
@@ -312,14 +281,13 @@ try:
             db.commit()
             messagebox.showinfo("Éxito", "Alumno agregado exitosamente")
             add_window.destroy()
-            load_students(None)  # Actualizar la tabla
+            load_students(None) 
         except mysql.connector.Error as err:
             messagebox.showerror("Error", f"No se pudo agregar el alumno: {err}")
 
       Button(add_window, text="Guardar", command=guardar_alumno, width=15).grid(row=5, column=0, columnspan=2, pady=20)
 
-    # Función para modificar alumno
-    import re  # Importamos la librería para usar expresiones regulares
+    import re  
 
     def modificar_alumno():
       try:
@@ -328,12 +296,12 @@ try:
         selected_course = course_list.get(course_list.curselection())
         table_name = selected_course.replace(" ", "_").replace("°", "")
 
-        # Crear ventana de modificación
+
         modify_window = Toplevel(base)
         modify_window.title("Modificar Alumno")
-        modify_window.geometry("400x400")
+        modify_window.geometry("400x300")
 
-        # Etiquetas y campos de entrada
+        # Campos de entrada
         Label(modify_window, text="Nombre:", font=("Arial", 12)).grid(row=0, column=0, pady=10, padx=10, sticky="w")
         entry_nombre = Entry(modify_window, width=30)
         entry_nombre.grid(row=0, column=1, pady=10, padx=10)
@@ -352,7 +320,7 @@ try:
         Label(modify_window, text="Asistencia:", font=("Arial", 12)).grid(row=3, column=0, pady=10, padx=10, sticky="w")
         presente_ausente_options = ["Presente", "Ausente"]
         selected_presente_var = StringVar()
-        selected_presente_var.set("Presente")  # Valor predeterminado
+        selected_presente_var.set("Presente")  
         option_presente = OptionMenu(modify_window, selected_presente_var, *presente_ausente_options)
         option_presente.grid(row=3, column=1, pady=10, padx=10)
 
@@ -360,7 +328,6 @@ try:
         entry_observaciones = Entry(modify_window, width=30)
         entry_observaciones.grid(row=4, column=1, pady=10, padx=10)
 
-        # Recuperar datos actuales del alumno
         query = f"SELECT nombre, apellido, presente_ausente, observaciones FROM `{table_name}` WHERE id = %s"
         cursor.execute(query, (student_id,))
         data = cursor.fetchone()
@@ -382,26 +349,25 @@ try:
 
             # Validaciones
             if not nuevo_nombre:
-                messagebox.showerror("Error", "El campo 'Nombre' es obligatorio.")
+                messagebox.showerror("Error", "El campo Nombre es obligatorio.")
                 return
             if not es_valido(nuevo_nombre):
-                messagebox.showerror("Error", "El campo 'Nombre' no debe contener números ni caracteres especiales.")
+                messagebox.showerror("Error", "El campo Nombre no debe contener números ni caracteres especiales.")
                 return
             if not nuevo_apellido:
-                messagebox.showerror("Error", "El campo 'Apellido' es obligatorio.")
+                messagebox.showerror("Error", "El campo Apellido es obligatorio.")
                 return
             if not es_valido(nuevo_apellido):
-                messagebox.showerror("Error", "El campo 'Apellido' no debe contener números ni caracteres especiales.")
+                messagebox.showerror("Error", "El campo Apellido no debe contener números ni caracteres especiales.")
                 return
             if not nuevas_observaciones:
-                messagebox.showerror("Error", "El campo 'Observaciones' es obligatorio.")
+                messagebox.showerror("Error", "El campo Observaciones es obligatorio.")
                 return
             if not es_valido(nuevas_observaciones):
-                messagebox.showerror("Error", "El campo 'Observaciones' no debe contener números ni caracteres especiales.")
+                messagebox.showerror("Error", "El campo Observaciones no debe contener números ni caracteres especiales.")
                 return
 
             try:
-                # Actualizar los datos del alumno en la tabla actual
                 query_update = f"""
                 UPDATE `{table_name}` 
                 SET nombre = %s, apellido = %s, presente_ausente = %s, observaciones = %s 
@@ -409,7 +375,6 @@ try:
                 """
                 cursor.execute(query_update, (nuevo_nombre, nuevo_apellido, nuevo_presente, nuevas_observaciones, student_id))
 
-                # Si el curso fue modificado, mover el alumno a la nueva tabla
                 if nuevo_curso != table_name:
                     query_insert_new_course = f"""
                     INSERT INTO `{nuevo_curso}` (fecha, nombre, apellido, presente_ausente, observaciones)
@@ -423,7 +388,7 @@ try:
                 db.commit()
                 messagebox.showinfo("Éxito", "Alumno modificado exitosamente")
                 modify_window.destroy()
-                load_students(None)  # Actualizar la tabla
+                load_students(None)  
             except mysql.connector.Error as err:
                 messagebox.showerror("Error", f"No se pudo modificar el alumno: {err}")
 
@@ -434,16 +399,13 @@ try:
     # Función para eliminar alumno
     def eliminar_alumno():
       try:
-        # Verificar si hay un alumno seleccionado
         selected_item = student_tree.selection()
         if not selected_item:
             messagebox.showwarning("Selección", "Por favor selecciona un alumno para eliminar")
             return
 
-        # Obtener el ID del alumno seleccionado
         student_id = student_tree.item(selected_item[0])["values"][0]
 
-        # Obtener el curso seleccionado
         if not course_list.curselection():
             messagebox.showwarning("Selección", "Por favor selecciona un curso primero")
             return
@@ -454,14 +416,13 @@ try:
         # Confirmar eliminación
         confirm = messagebox.askyesno("Confirmar Eliminación", f"¿Estás seguro de que deseas eliminar al alumno con ID {student_id}?")
         if confirm:
-            # Eliminar el alumno de la base de datos
+
             query = f"DELETE FROM `{table_name}` WHERE id = %s"
             cursor.execute(query, (student_id,))
             db.commit()
-
-            # Mostrar mensaje de éxito y actualizar la tabla
+            
             messagebox.showinfo("Éxito", "Alumno eliminado exitosamente")
-            load_students(None)  # Actualizar la tabla de estudiantes
+            load_students(None) 
 
       except IndexError:
         messagebox.showwarning("Selección", "Por favor selecciona un alumno para eliminar")
@@ -471,7 +432,7 @@ try:
         messagebox.showerror("Error", f"Ha ocurrido un error inesperado: {e}")
 
 
-    # Botones de acción
+    # Botones 
     button_frame = Frame(base)
     button_frame.pack(fill=X, padx=15, pady=10)
 
