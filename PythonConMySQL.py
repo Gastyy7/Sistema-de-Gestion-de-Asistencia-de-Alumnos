@@ -52,10 +52,10 @@ try:
 
     base = Tk()
     base.geometry("1200x600")
-    base.title("Gestión de Cursos y Estudiantes")
+    base.title("Sistema de Preceptores")
 
     # Cursos y Estudiantes
-    groupBoxCursos = LabelFrame(base, text="Cursos y Estudiantes", padx=5, pady=5)
+    groupBoxCursos = LabelFrame(base, text="Cursos", padx=5, pady=5)
     groupBoxCursos.pack(fill=BOTH, expand=True, padx=15, pady=15)
 
     # Lista de cursos
@@ -77,18 +77,18 @@ try:
     control_frame = Frame(student_frame)
     control_frame.pack(side=TOP, fill=X, padx=10, pady=5) 
 
-    student_tree = ttk.Treeview(student_frame, columns=("ID", "Fecha", "Nombre", "Apellido", "Presente/Ausente", "Observaciones"), show='headings', height=12)
+    student_tree = ttk.Treeview(student_frame, columns=("ID", "Fecha", "Apellido", "Nombre", "Presente/Ausente", "Observaciones"), show='headings', height=12)
     student_tree.heading("ID", text="ID")
     student_tree.column("ID", width=50, anchor=CENTER)
 
     student_tree.heading("Fecha", text="Fecha")
     student_tree.column("Fecha", width=100, anchor=CENTER)
 
-    student_tree.heading("Nombre", text="Nombre")
-    student_tree.column("Nombre", width=150, anchor=W)
-
     student_tree.heading("Apellido", text="Apellido")
     student_tree.column("Apellido", width=150, anchor=W)
+
+    student_tree.heading("Nombre", text="Nombre")
+    student_tree.column("Nombre", width=150, anchor=W)
 
     student_tree.heading("Presente/Ausente", text="Asistencia")
     student_tree.column("Presente/Ausente", width=120, anchor=CENTER)
@@ -112,7 +112,7 @@ try:
 
       try:
  
-        query = f"SELECT id, fecha, nombre, apellido, presente_ausente, observaciones FROM `{table_name}` ORDER BY {criterio}"
+        query = f"SELECT id, fecha, apellido, nombre, presente_ausente, observaciones FROM `{table_name}` ORDER BY {criterio}"
         cursor.execute(query)
         students = cursor.fetchall()
 
@@ -155,7 +155,7 @@ try:
         for row in student_tree.get_children():
             student_tree.delete(row)
 
-        query = f"SELECT id, fecha, nombre, apellido, presente_ausente, observaciones FROM `{table_name}`"
+        query = f"SELECT id, fecha, apellido, nombre, presente_ausente, observaciones FROM `{table_name}`"
         cursor.execute(query)
         students = cursor.fetchall()
 
@@ -180,7 +180,7 @@ try:
     def agregar_alumno():
       add_window = Toplevel(base)
       add_window.title("Agregar Alumno")
-      add_window.geometry("400x350")
+      add_window.geometry("400x300")
 
     # Etiquetas y campos de entrada
       Label(add_window, text="Nombre:", font=("Arial", 12)).grid(row=0, column=0, pady=10, padx=10, sticky="w")
@@ -279,11 +279,13 @@ try:
             query = f"INSERT INTO `{table_name}` (fecha, nombre, apellido, presente_ausente, observaciones) VALUES (CURDATE(), %s, %s, %s, %s)"
             cursor.execute(query, (nombre, apellido, presente_boolean, observaciones))
             db.commit()
-            messagebox.showinfo("Éxito", "Alumno agregado exitosamente")
-            add_window.destroy()
             load_students(None) 
+            messagebox.showinfo("Éxito", "Alumno agregado exitosamente")
+            load_students(None) 
+            add_window.destroy()
         except mysql.connector.Error as err:
             messagebox.showerror("Error", f"No se pudo agregar el alumno: {err}")
+            add_window.destroy()
 
       Button(add_window, text="Guardar", command=guardar_alumno, width=15).grid(row=5, column=0, columnspan=2, pady=20)
 
